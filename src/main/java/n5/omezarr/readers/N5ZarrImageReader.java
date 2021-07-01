@@ -1,4 +1,4 @@
-package n5.zarr.zarr;
+package n5.omezarr.readers;
 
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
@@ -7,9 +7,14 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.Type;
 import net.imglib2.view.IntervalView;
 import net.imglib2.view.Views;
+import org.janelia.saalfeldlab.n5.BlockReader;
+import org.janelia.saalfeldlab.n5.ByteArrayDataBlock;
+import org.janelia.saalfeldlab.n5.DataBlock;
 import org.janelia.saalfeldlab.n5.N5Reader;
-
+import org.janelia.saalfeldlab.n5.zarr.*;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.HashMap;
 
@@ -117,4 +122,42 @@ public interface N5ZarrImageReader extends N5Reader {
 
         return pathStringBuilder.toString();
     }
+
+    /**
+     * Reads a {@link DataBlock} from an {@link InputStream}.
+     *
+     * @param in
+     * @param datasetAttributes
+     * @param gridPosition
+     * @return
+     * @throws IOException
+     */
+    @SuppressWarnings("incomplete-switch")
+   default DataBlock<?> readBlock(
+            final InputStream in,
+            final ZarrDatasetAttributes datasetAttributes,
+            final long... gridPosition) throws IOException {
+        final int[] blockSize = datasetAttributes.getBlockSize();
+        final DType dType = datasetAttributes.getDType();
+
+        final ByteArrayDataBlock byteBlock = dType.createByteBlock(blockSize, gridPosition);
+
+        final BlockReader reader = datasetAttributes.getCompression().getReader();
+        reader.read(byteBlock, in);
+
+        switch (dType.getDataType()) {
+            case UINT8:
+            case INT8:
+                return byteBlock;
+        }
+
+        /* else translate into target type */
+        final DataBlock<?> dataBlock = dType.createDataBlock(blockSize, gridPosition);
+        final ByteBuffer byteBuffer = byteBlock.toByteBuffer();
+        byteBuffer.order(dType.getOrder());
+        dataBlock.readData(byteBuffer);
+
+        return dataBlock;
+    }
+
 }

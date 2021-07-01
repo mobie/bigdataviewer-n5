@@ -1,4 +1,4 @@
-package n5.zarr.zarr;
+package n5.omezarr.readers;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonFormat;

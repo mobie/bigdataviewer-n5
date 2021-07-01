@@ -1,41 +1,21 @@
-package ui;
+package n5.omezarr;
 
 import mpicbg.spim.data.SpimData;
-import n5.zarr.zarr.OMEZarrReader;
-import n5.zarr.zarr.OMEZarrViewer;
-import org.scijava.command.Command;
-import org.scijava.plugin.Parameter;
-import org.scijava.plugin.Plugin;
+import n5.omezarr.readers.OMEZarrReader;
+import n5.omezarr.readers.OMEZarrViewer;
 
 import java.io.IOException;
-
-@Plugin(type = Command.class, menuPath = "Plugins>BigDataViewer>OME ZARR>Open OME ZARR from the file system..." )
-public class OpenOMEZARRCommand implements Command
-{
-    @Parameter( label = "File path " )
-    public String filePath = "";
-
-    @Override
-    public void run()
+public class Main
     {
-        try
-        {
-            openAndShow( filePath );
-        }
-        catch ( IOException e )
-        {
-            e.printStackTrace();
-        }
-    }
 
-    protected static void openAndShow( String filePath ) throws IOException
-    {
-        SpimData spimData = OMEZarrReader.openFile( filePath );
-        final OMEZarrViewer viewer = new OMEZarrViewer( spimData );
-        viewer.show();
-    }
+        protected static void openAndShow( String filePath ) throws IOException
+        {
+            SpimData spimData = OMEZarrReader.openFile( filePath );
+            final OMEZarrViewer viewer = new OMEZarrViewer( spimData );
+            viewer.show();
+        }
 
-    public static void main(String[] args) {
+        public static void main(String[] args) {
         try {
 //            openAndShow("/home/katerina/Documents/data/v0.3/yx.ome.zarr");
             openAndShow("/home/katerina/Documents/data/v0.3/flat_yx.ome.zarr");
@@ -55,4 +35,3 @@ public class OpenOMEZARRCommand implements Command
         }
     }
 }
-

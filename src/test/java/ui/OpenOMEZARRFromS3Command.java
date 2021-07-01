@@ -1,8 +1,8 @@
 package ui;
 
 import mpicbg.spim.data.SpimData;
-import n5.zarr.zarr.OMEZarrS3Reader;
-import n5.zarr.zarr.OMEZarrViewer;
+import n5.omezarr.readers.OMEZarrS3Reader;
+import n5.omezarr.readers.OMEZarrViewer;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;

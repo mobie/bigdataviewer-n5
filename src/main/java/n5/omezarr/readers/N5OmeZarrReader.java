@@ -23,17 +23,15 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package n5.zarr.zarr;
+package n5.omezarr.readers;
 
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.reflect.TypeToken;
 import org.janelia.saalfeldlab.n5.*;
 import org.jetbrains.annotations.NotNull;
-
+import org.janelia.saalfeldlab.n5.zarr.*;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -53,7 +51,6 @@ public class N5OmeZarrReader extends N5FSReader implements N5ZarrImageReader {
     final protected boolean mapN5DatasetAttributes;
     protected String dimensionSeparator;
     HashMap<String, Integer> axesMap = new HashMap<>();
-
     /**
      * Opens an {@link N5OmeZarrReader} at a given base path with a custom
      * {@link GsonBuilder} to support custom attributes.
@@ -244,7 +241,6 @@ public class N5OmeZarrReader extends N5FSReader implements N5ZarrImageReader {
     @NotNull
     private ZArrayAttributes getAttributes(HashMap<String, JsonElement> attributes) {
         this.dimensionSeparator = getDimensionSeparator(attributes);
-
         return new ZArrayAttributes(
                 attributes.get("zarr_format").getAsInt(),
                 gson.fromJson(attributes.get("shape"), long[].class),
@@ -315,7 +311,6 @@ public class N5OmeZarrReader extends N5FSReader implements N5ZarrImageReader {
 
     private void putAttributes(String pathName, HashMap<String, JsonElement> attributes) throws IOException {
         if (mapN5DatasetAttributes && datasetExists(pathName)) {
-
             final DatasetAttributes datasetAttributes = getZArraryAttributes(pathName).getDatasetAttributes();
             attributes.put("dimensions", gson.toJsonTree(datasetAttributes.getDimensions()));
             attributes.put("blockSize", gson.toJsonTree(datasetAttributes.getBlockSize()));
@@ -328,100 +323,6 @@ public class N5OmeZarrReader extends N5FSReader implements N5ZarrImageReader {
         return this.axesMap;
     }
 
-    /**
-     * Reads a {@link DataBlock} from an {@link InputStream}.
-     *
-     * @param in
-     * @param datasetAttributes
-     * @param gridPosition
-     * @return
-     * @throws IOException
-     */
-    @SuppressWarnings("incomplete-switch")
-    public static DataBlock<?> readBlock(
-            final InputStream in,
-            final ZarrDatasetAttributes datasetAttributes,
-            final long... gridPosition) throws IOException {
-
-        final int[] blockSize = datasetAttributes.getBlockSize();
-        final DType dType = datasetAttributes.getDType();
-
-        final ByteArrayDataBlock byteBlock = dType.createByteBlock(blockSize, gridPosition);
-
-        final BlockReader reader = datasetAttributes.getCompression().getReader();
-        /////////////////////////////////////////////////////////////////////////////////////////////////////////
-        reader.read(byteBlock, in);
-
-        switch (dType.getDataType()) {
-            case UINT8:
-            case INT8:
-                return byteBlock;
-        }
-
-        /* else translate into target type */
-        final DataBlock<?> dataBlock = dType.createDataBlock(blockSize, gridPosition);
-        final ByteBuffer byteBuffer = byteBlock.toByteBuffer();
-        byteBuffer.order(dType.getOrder());
-        dataBlock.readData(byteBuffer);
-
-        /* TODO I do not think that makes sense, F order should be opened transposed, the consumer can decide what to do with them? */
-//		if (!datasetAttributes.isRowMajor()) {
-//
-//			final long[] blockDimensions = new long[blockSize.length];
-//			Arrays.setAll(blockDimensions, d -> blockSize[d]);
-//
-//			switch (datasetAttributes.getDataType()) {
-//			case INT8:
-//			case UINT8: {
-//					final byte[] dataBlockData = (byte[])dataBlock.getData();
-//					final ArrayImg<ByteType, ByteArray> src = ArrayImgs.bytes(dataBlockData.clone(), blockDimensions);
-//					final ArrayImg<ByteType, ByteArray> dst = ArrayImgs.bytes(dataBlockData.clone(), blockDimensions);
-//					copyTransposed(src, dst);
-//				}
-//				break;
-//			case INT16:
-//			case UINT16: {
-//					final short[] dataBlockData = (short[])dataBlock.getData();
-//					final ArrayImg<ShortType, ShortArray> src = ArrayImgs.shorts(dataBlockData.clone(), blockDimensions);
-//					final ArrayImg<ShortType, ShortArray> dst = ArrayImgs.shorts(dataBlockData.clone(), blockDimensions);
-//					copyTransposed(src, dst);
-//				}
-//				break;
-//			case INT32:
-//			case UINT32: {
-//					final int[] dataBlockData = (int[])dataBlock.getData();
-//					final ArrayImg<IntType, IntArray> src = ArrayImgs.ints(dataBlockData.clone(), blockDimensions);
-//					final ArrayImg<IntType, IntArray> dst = ArrayImgs.ints(dataBlockData.clone(), blockDimensions);
-//					copyTransposed(src, dst);
-//				}
-//				break;
-//			case INT64:
-//			case UINT64: {
-//					final long[] dataBlockData = (long[])dataBlock.getData();
-//					final ArrayImg<LongType, LongArray> src = ArrayImgs.longs(dataBlockData.clone(), blockDimensions);
-//					final ArrayImg<LongType, LongArray> dst = ArrayImgs.longs(dataBlockData.clone(), blockDimensions);
-//					copyTransposed(src, dst);
-//				}
-//				break;
-//			case FLOAT32: {
-//					final float[] dataBlockData = (float[])dataBlock.getData();
-//					final ArrayImg<FloatType, FloatArray> src = ArrayImgs.floats(dataBlockData.clone(), blockDimensions);
-//					final ArrayImg<FloatType, FloatArray> dst = ArrayImgs.floats(dataBlockData.clone(), blockDimensions);
-//					copyTransposed(src, dst);
-//				}
-//				break;
-//			case FLOAT64: {
-//					final double[] dataBlockData = (double[])dataBlock.getData();
-//					final ArrayImg<DoubleType, DoubleArray> src = ArrayImgs.doubles(dataBlockData.clone(), blockDimensions);
-//					final ArrayImg<DoubleType, DoubleArray> dst = ArrayImgs.doubles(dataBlockData.clone(), blockDimensions);
-//					copyTransposed(src, dst);
-//				}
-//				break;
-//			}
-//		}
-
-        return dataBlock;
-    }
 
     @Override
     public DataBlock<?> readBlock(

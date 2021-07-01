@@ -27,7 +27,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  * #L%
  */
-package n5.zarr.loaders;
+package n5.omezarr.loaders;
 
 import bdv.AbstractViewerSetupImgLoader;
 import bdv.ViewerImgLoader;
@@ -67,7 +67,7 @@ import org.janelia.saalfeldlab.n5.DatasetAttributes;
 import org.janelia.saalfeldlab.n5.N5Reader;
 import org.janelia.saalfeldlab.n5.imglib2.N5CellLoader;
 import org.jetbrains.annotations.NotNull;
-import n5.zarr.zarr.N5S3ZarrReader;
+import n5.omezarr.readers.N5S3ZarrReader;
 
 import java.io.IOException;
 import java.util.*;

@@ -23,15 +23,10 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package n5.zarr.zarr;
-
 /**
- * Place holder interface for filters
- *
- * TODO implement some
+ * Zarr backends for N5
  *
  * @author Stephan Saalfeld &lt;saalfelds@janelia.hhmi.org&gt;
+ *
  */
-public interface Filter {
-
-}
+package n5.omezarr;

@@ -23,7 +23,7 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package n5.zarr.zarr;
+package n5.omezarr.readers;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
@@ -31,13 +31,13 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.reflect.TypeToken;
 import org.janelia.saalfeldlab.n5.*;
+import org.janelia.saalfeldlab.n5.zarr.*;
 import org.janelia.saalfeldlab.n5.s3.N5AmazonS3Reader;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.nio.ByteBuffer;
 import java.util.Collection;
 import java.util.HashMap;
 
@@ -169,7 +169,7 @@ public class N5S3ZarrReader extends N5AmazonS3Reader implements N5ZarrImageReade
     @NotNull
     private ZArrayAttributes getAttributes(HashMap<String, JsonElement> attributes) {
         this.dimensionSeparator = getDimensionSeparator(attributes);
-
+//        ZArrayAttributes attributes1 = n5ZarrImageReaderHelper.getZarrAttributes(attributes);
         return new ZArrayAttributes(
                 attributes.get("zarr_format").getAsInt(),
                 gson.fromJson(attributes.get("shape"), long[].class),
@@ -224,7 +224,6 @@ public class N5S3ZarrReader extends N5AmazonS3Reader implements N5ZarrImageReade
 
     private void putAttributes(String pathName, HashMap<String, JsonElement> attributes) throws IOException {
         if (mapN5DatasetAttributes && datasetExists(pathName)) {
-
             final DatasetAttributes datasetAttributes = getZArraryAttributes(pathName).getDatasetAttributes();
             attributes.put("dimensions", gson.toJsonTree(datasetAttributes.getDimensions()));
             attributes.put("blockSize", gson.toJsonTree(datasetAttributes.getBlockSize()));
@@ -232,44 +231,6 @@ public class N5S3ZarrReader extends N5AmazonS3Reader implements N5ZarrImageReade
             attributes.put("compression", gson.toJsonTree(datasetAttributes.getCompression()));
         }
     }
-
-    /**
-     * Reads a {@link DataBlock} from an {@link InputStream}.
-     *
-     * @param in
-     * @param datasetAttributes
-     * @param gridPosition
-     * @return
-     * @throws IOException
-     */
-    @SuppressWarnings("incomplete-switch")
-    public static DataBlock<?> readBlock(
-            final InputStream in,
-            final ZarrDatasetAttributes datasetAttributes,
-            final long... gridPosition) throws IOException {
-        final int[] blockSize = datasetAttributes.getBlockSize();
-        final DType dType = datasetAttributes.getDType();
-
-        final ByteArrayDataBlock byteBlock = dType.createByteBlock(blockSize, gridPosition);
-
-        final BlockReader reader = datasetAttributes.getCompression().getReader();
-        reader.read(byteBlock, in);
-
-        switch (dType.getDataType()) {
-            case UINT8:
-            case INT8:
-                return byteBlock;
-        }
-
-        /* else translate into target type */
-        final DataBlock<?> dataBlock = dType.createDataBlock(blockSize, gridPosition);
-        final ByteBuffer byteBuffer = byteBlock.toByteBuffer();
-        byteBuffer.order(dType.getOrder());
-        dataBlock.readData(byteBuffer);
-
-        return dataBlock;
-    }
-
 
     @Override
     public DataBlock<?> readBlock(

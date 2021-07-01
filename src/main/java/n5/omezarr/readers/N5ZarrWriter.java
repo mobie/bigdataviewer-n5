@@ -23,7 +23,7 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package n5.zarr.zarr;
+package n5.omezarr.readers;
 
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
@@ -37,7 +37,7 @@ import net.imglib2.type.numeric.integer.ByteType;
 import net.imglib2.util.Intervals;
 import net.imglib2.view.Views;
 import org.janelia.saalfeldlab.n5.*;
-
+import org.janelia.saalfeldlab.n5.zarr.*;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -50,11 +50,12 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
+import org.janelia.saalfeldlab.n5.zarr.*;
 
 /**
  * @author Stephan Saalfeld
  */
-public class N5ZarrWriter extends N5ZarrReader implements N5Writer
+public class N5ZarrWriter extends N5OmeZarrReader implements N5Writer
 {
 
 	/**
@@ -198,7 +199,7 @@ public class N5ZarrWriter extends N5ZarrReader implements N5Writer
 
 		final Path path = groupPath.resolve(zgroupFile);
 		final HashMap< String, JsonElement> map = new HashMap<>();
-		map.put("zarr_format", new JsonPrimitive(N5ZarrReader.VERSION.getMajor()));
+		map.put("zarr_format", new JsonPrimitive(N5OmeZarrReader.VERSION.getMajor()));
 
 		try (final N5FSReader.LockedFileChannel lockedFileChannel = N5FSReader.LockedFileChannel.openForWriting(path)) {
 			lockedFileChannel.getFileChannel().truncate(0);
@@ -234,7 +235,7 @@ public class N5ZarrWriter extends N5ZarrReader implements N5Writer
 		Utils.reorder(chunks);
 
 		final ZArrayAttributes zArrayAttributes = new ZArrayAttributes(
-				N5ZarrReader.VERSION.getMajor(),
+				N5OmeZarrReader.VERSION.getMajor(),
 				shape,
 				chunks,
 				new DType(datasetAttributes.getDataType()),

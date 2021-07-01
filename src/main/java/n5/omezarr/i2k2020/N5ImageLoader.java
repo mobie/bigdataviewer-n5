@@ -27,7 +27,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  * #L%
  */
-package n5.zarr.i2k2020;
+package n5.omezarr.i2k2020;
 
 import bdv.AbstractViewerSetupImgLoader;
 import bdv.ViewerImgLoader;
